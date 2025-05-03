@@ -3,6 +3,8 @@ package handlers
 import (
 	"errors"
 	"fmt"
+	"log"
+	"strconv"
 
 	databse "github.com/emperorsixpacks/go-todo/database"
 	"github.com/gofiber/fiber/v2"
@@ -11,7 +13,7 @@ import (
 var DB = databse.GetCache()
 
 type Task struct {
-	Id           int    `json:"page-id"`
+	Id           int64  `json:"page-id"`
 	Title        string `json:"title"`
 	Summary      string `json:"summary"`
 	Is_completed bool   `json:"is-completed"`
@@ -34,7 +36,7 @@ func getTasks() (TasksList, bool) {
 	return items.(TasksList), true
 }
 
-func geTaskbyID(id int) (*Task, error) {
+func geTaskbyID(id int64) (*Task, error) {
 	var task *Task
 	items, ok := getTasks()
 	if !ok {
@@ -64,14 +66,16 @@ func GetTasks(ctx *fiber.Ctx) error {
 
 func GetTask(ctx *fiber.Ctx) error {
 	id := ctx.Params("id")
-	items, ok := getTasks()
-	if !ok {
+	int_id, _ := strconv.ParseInt(id, 10, 64)
+	item, err := geTaskbyID(int_id)
+	if err != nil {
+		log.Fatal(err)
 		message_str := fmt.Sprintf("Task with id %s not found", id)
 		message := Message{message_str, fiber.StatusNotFound}
 		return ctx.Status(message.StatusCode).JSON(message)
 	}
 
-	return ctx.JSON(items)
+	return ctx.JSON(item)
 }
 
 func DeleteTask(ctx *fiber.Ctx) error {
