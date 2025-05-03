@@ -17,3 +17,8 @@ func InitDB(db_path string) {
 		log.Fatal("Error initializing db", err)
 	}
 }
+
+func CreateTodo(title string) error {}
+func DeleteTodo(title string) error {}
+func UpdateTodo(title string) error {}
+func GetTodos()                     {}
