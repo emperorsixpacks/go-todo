@@ -24,7 +24,7 @@ func GetTask(ctx *fiber.Ctx) error {
 	int_id, _ := strconv.ParseInt(id, 10, 64)
 	item, err := database.GetTaskbyID(int_id)
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("Err %s", err)
 		message_str := fmt.Sprintf("Task with id %s not found", id)
 		message := database.ResponseMessage{Message: message_str, StatusCode: fiber.StatusNotFound}
 		return ctx.Status(message.StatusCode).JSON(message)
@@ -34,16 +34,34 @@ func GetTask(ctx *fiber.Ctx) error {
 }
 
 func DeleteTask(ctx *fiber.Ctx) error {
-	return nil
+	id := ctx.Params("id")
+	int_id, _ := strconv.ParseInt(id, 10, 64)
+	tasks, err := database.DeleteTask(int_id)
+	if err != nil {
+		log.Printf("Err %s", err)
+		message := database.ResponseMessage{Message: "error", StatusCode: fiber.StatusInternalServerError}
+		return ctx.Status(message.StatusCode).JSON(message)
+	}
+	return ctx.JSON(tasks)
+
 }
 
 func UpdateTask(ctx *fiber.Ctx) error {
-	return nil
+	id := ctx.Params("id")
+	int_id, _ := strconv.ParseInt(id, 10, 64)
+	err := database.MarkAsComplete(int_id)
+	if err != nil {
+		log.Printf("Err %s", err)
+		message := database.ResponseMessage{Message: "error", StatusCode: fiber.StatusInternalServerError}
+		return ctx.Status(message.StatusCode).JSON(message)
+	}
+	return ctx.SendStatus(fiber.StatusOK)
 }
 
 func CreateTask(ctx *fiber.Ctx) error {
 	var task database.Task
 	if err := ctx.BodyParser(&task); err != nil {
+		log.Printf("Err %s", err)
 		message := database.ResponseMessage{Message: "Unprocessable request", StatusCode: fiber.StatusUnprocessableEntity}
 		return ctx.Status(message.StatusCode).JSON(message)
 	}

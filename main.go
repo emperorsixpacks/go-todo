@@ -20,15 +20,12 @@ func setUpRoutes(a *fiber.App) {
 	a.Get("/todos", handlers.GetTasks)
 	a.Get("/todos/:id", handlers.GetTask)
 	a.Delete("/delete/:id", handlers.DeleteTask)
-	a.Put("/update/:id", handlers.UpdateTask)
+	a.Put("/complete/:id", handlers.UpdateTask)
 	a.Post("/create", handlers.CreateTask)
 }
 
 func initDB() {
 	_tasksList := database.TasksList{Tasks: make([]*database.Task, 0)}
-
 	db := database.GetCache()
-	if _, ok := db.Get("todos"); !ok {
-		db.Set("todos", _tasksList, 0)
-	}
+	db.Set("tasks", _tasksList, 0)
 }
