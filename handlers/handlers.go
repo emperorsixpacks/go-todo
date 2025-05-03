@@ -1,8 +1,7 @@
 package handlers
 
 import (
-	"encoding/json"
-	"log"
+	"fmt"
 
 	databse "github.com/emperorsixpacks/go-todo/database"
 	"github.com/gofiber/fiber/v2"
@@ -11,14 +10,13 @@ import (
 var DB = databse.GetCache()
 
 type Todo struct {
-	Id    int    `json:"page-id"`
+	Id           int    `json:"page-id"`
 	Title        string `json:"title"`
 	Summary      string `json:"summary"`
 	Is_completed bool   `json:"is-completed"`
 }
 
-type Page struct {
-	Id    int    `json:"page-id"`
+type TodosList struct {
 	Todos []Todo `json:"todos"`
 }
 
@@ -27,23 +25,34 @@ type Message struct {
 	StatusCode   int    `json:"status"`
 }
 
+func getTodos() ([]TodosList, bool) {
+	items, ok := DB.Get("todos")
+	if !ok {
+		return []TodosList{}, false
+	}
+	return items.([]TodosList), true
+}
+
 func GetTodos(ctx *fiber.Ctx) error {
-	item, ok := DB.Get("todos")
+	items, ok := DB.Get("todos")
 	if !ok {
 		message := Message{"No todos found now", fiber.StatusNotFound}
 		return ctx.Status(message.StatusCode).JSON(message)
 	}
-	item_json, err := json.Marshal(item)
-	if err != nil {
-		log.Fatal(err)
-		return ctx.Status(fiber.StatusInternalServerError).SendString("internal server err")
-	}
-	return ctx.JSON(item_json)
+
+	return ctx.JSON(items)
 }
 
 func GetTodo(ctx *fiber.Ctx) error {
 	id := ctx.Params("id")
+	items, ok := DB.Get("todos")
+	if !ok {
+		message_str := fmt.Sprintf("Todo with id %s not found", id)
+		message := Message{message_str, fiber.StatusNotFound}
+		return ctx.Status(message.StatusCode).JSON(message)
+	}
 
+	return ctx.JSON(items)
 }
 
 func DeleteTodo(ctx *fiber.Ctx) error {
