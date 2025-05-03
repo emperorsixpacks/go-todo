@@ -12,7 +12,7 @@ import (
 func GetTasks(ctx *fiber.Ctx) error {
 	items, ok := database.GetTasks()
 	if !ok {
-		message := database.Message{ErrorMessage: "No tasks found now", StatusCode: fiber.StatusNotFound}
+		message := database.ResponseMessage{Message: "No tasks found now", StatusCode: fiber.StatusNotFound}
 		return ctx.Status(message.StatusCode).JSON(message)
 	}
 
@@ -26,7 +26,7 @@ func GetTask(ctx *fiber.Ctx) error {
 	if err != nil {
 		log.Fatal(err)
 		message_str := fmt.Sprintf("Task with id %s not found", id)
-		message := database.Message{ErrorMessage: message_str, StatusCode: fiber.StatusNotFound}
+		message := database.ResponseMessage{Message: message_str, StatusCode: fiber.StatusNotFound}
 		return ctx.Status(message.StatusCode).JSON(message)
 	}
 
@@ -44,7 +44,10 @@ func UpdateTask(ctx *fiber.Ctx) error {
 func CreateTask(ctx *fiber.Ctx) error {
 	var task database.Task
 	if err := ctx.BodyParser(&task); err != nil {
-		message := database.Message{ErrorMessage: "Unprocessable request", StatusCode: fiber.StatusUnprocessableEntity}
+		message := database.ResponseMessage{Message: "Unprocessable request", StatusCode: fiber.StatusUnprocessableEntity}
 		return ctx.Status(message.StatusCode).JSON(message)
 	}
+	_ = database.CreateTask(task)
+	message := database.ResponseMessage{Message: "Task created", StatusCode: fiber.StatusOK}
+	return ctx.Status(message.StatusCode).JSON(message)
 }
