@@ -3,21 +3,21 @@ package handlers
 import (
 	"fmt"
 
-	databse "github.com/emperorsixpacks/go-todo/database"
+	databse "github.com/emperorsixpacks/go-task/database"
 	"github.com/gofiber/fiber/v2"
 )
 
 var DB = databse.GetCache()
 
-type Todo struct {
+type Task struct {
 	Id           int    `json:"page-id"`
 	Title        string `json:"title"`
 	Summary      string `json:"summary"`
 	Is_completed bool   `json:"is-completed"`
 }
 
-type TodosList struct {
-	Todos []Todo `json:"todos"`
+type TasksList struct {
+	Tasks []Task `json:"tasks"`
 }
 
 type Message struct {
@@ -25,29 +25,31 @@ type Message struct {
 	StatusCode   int    `json:"status"`
 }
 
-func getTodos() ([]TodosList, bool) {
-	items, ok := DB.Get("todos")
+func getTasks() ([]TasksList, bool) {
+	items, ok := DB.Get("tasks")
 	if !ok {
-		return []TodosList{}, false
+		return []TasksList{}, false
 	}
-	return items.([]TodosList), true
+	return items.([]TasksList), true
 }
 
-func GetTodos(ctx *fiber.Ctx) error {
-	items, ok := DB.Get("todos")
+func geTask(id int)
+
+func GetTasks(ctx *fiber.Ctx) error {
+	items, ok := getTasks()
 	if !ok {
-		message := Message{"No todos found now", fiber.StatusNotFound}
+		message := Message{"No tasks found now", fiber.StatusNotFound}
 		return ctx.Status(message.StatusCode).JSON(message)
 	}
 
 	return ctx.JSON(items)
 }
 
-func GetTodo(ctx *fiber.Ctx) error {
+func GetTask(ctx *fiber.Ctx) error {
 	id := ctx.Params("id")
-	items, ok := DB.Get("todos")
+	items, ok := getTasks()
 	if !ok {
-		message_str := fmt.Sprintf("Todo with id %s not found", id)
+		message_str := fmt.Sprintf("Task with id %s not found", id)
 		message := Message{message_str, fiber.StatusNotFound}
 		return ctx.Status(message.StatusCode).JSON(message)
 	}
@@ -55,14 +57,14 @@ func GetTodo(ctx *fiber.Ctx) error {
 	return ctx.JSON(items)
 }
 
-func DeleteTodo(ctx *fiber.Ctx) error {
+func DeleteTask(ctx *fiber.Ctx) error {
 	return nil
 }
 
-func UpdateTodo(ctx *fiber.Ctx) error {
+func UpdateTask(ctx *fiber.Ctx) error {
 	return nil
 }
 
-func CreateTodo(ctx *fiber.Ctx) error {
+func CreateTask(ctx *fiber.Ctx) error {
 	return nil
 }
