@@ -1,9 +1,10 @@
 package handlers
 
 import (
+	"errors"
 	"fmt"
 
-	databse "github.com/emperorsixpacks/go-task/database"
+	databse "github.com/emperorsixpacks/go-todo/database"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -17,7 +18,7 @@ type Task struct {
 }
 
 type TasksList struct {
-	Tasks []Task `json:"tasks"`
+	Tasks []*Task `json:"tasks"`
 }
 
 type Message struct {
@@ -25,15 +26,31 @@ type Message struct {
 	StatusCode   int    `json:"status"`
 }
 
-func getTasks() ([]TasksList, bool) {
+func getTasks() (TasksList, bool) {
 	items, ok := DB.Get("tasks")
 	if !ok {
-		return []TasksList{}, false
+		return TasksList{}, false
 	}
-	return items.([]TasksList), true
+	return items.(TasksList), true
 }
 
-func geTask(id int)
+func geTaskbyID(id int) (*Task, error) {
+	var task *Task
+	items, ok := getTasks()
+	if !ok {
+		return nil, errors.New("No task found")
+	}
+	for _, x := range items.Tasks {
+		if x.Id != id {
+			continue
+		}
+		task = x
+	}
+	if task == nil {
+		return nil, fmt.Errorf("No task with id %d", id)
+	}
+	return task, nil
+}
 
 func GetTasks(ctx *fiber.Ctx) error {
 	items, ok := getTasks()
