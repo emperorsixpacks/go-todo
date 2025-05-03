@@ -8,7 +8,7 @@ import (
 var DB Cache
 
 type Task struct {
-	Id           int64  `json:"page-id"`
+	id           int64
 	Title        string `json:"title"`
 	Summary      string `json:"summary"`
 	Is_completed bool   `json:"is-completed"`
@@ -38,7 +38,7 @@ func GetTaskbyID(id int64) (*Task, error) {
 		return nil, errors.New("No task found")
 	}
 	for _, x := range items.Tasks {
-		if x.Id != id {
+		if x.id != id {
 			continue
 		}
 		task = x
