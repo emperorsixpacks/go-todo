@@ -17,8 +17,8 @@ type Todo struct {
 }
 
 type Page struct {
-	id    int    `json:"page-id"`
-	todos []Todo `json:"todos"`
+	Id    int    `json:"page-id"`
+	Todos []Todo `json:"todos"`
 }
 
 func GetTodos(ctx *fiber.Ctx) error {
