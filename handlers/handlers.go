@@ -1,63 +1,18 @@
 package handlers
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"strconv"
 
-	databse "github.com/emperorsixpacks/go-todo/database"
+	database "github.com/emperorsixpacks/go-todo/database"
 	"github.com/gofiber/fiber/v2"
 )
 
-var DB = databse.GetCache()
-
-type Task struct {
-	Id           int64  `json:"page-id"`
-	Title        string `json:"title"`
-	Summary      string `json:"summary"`
-	Is_completed bool   `json:"is-completed"`
-}
-
-type TasksList struct {
-	Tasks []*Task `json:"tasks"`
-}
-
-type Message struct {
-	ErrorMessage string `json:"message"`
-	StatusCode   int    `json:"status"`
-}
-
-func getTasks() (TasksList, bool) {
-	items, ok := DB.Get("tasks")
-	if !ok {
-		return TasksList{}, false
-	}
-	return items.(TasksList), true
-}
-
-func geTaskbyID(id int64) (*Task, error) {
-	var task *Task
-	items, ok := getTasks()
-	if !ok {
-		return nil, errors.New("No task found")
-	}
-	for _, x := range items.Tasks {
-		if x.Id != id {
-			continue
-		}
-		task = x
-	}
-	if task == nil {
-		return nil, fmt.Errorf("No task with id %d", id)
-	}
-	return task, nil
-}
-
 func GetTasks(ctx *fiber.Ctx) error {
-	items, ok := getTasks()
+	items, ok := database.GetTasks()
 	if !ok {
-		message := Message{"No tasks found now", fiber.StatusNotFound}
+		message := database.Message{ErrorMessage: "No tasks found now", StatusCode: fiber.StatusNotFound}
 		return ctx.Status(message.StatusCode).JSON(message)
 	}
 
@@ -67,11 +22,11 @@ func GetTasks(ctx *fiber.Ctx) error {
 func GetTask(ctx *fiber.Ctx) error {
 	id := ctx.Params("id")
 	int_id, _ := strconv.ParseInt(id, 10, 64)
-	item, err := geTaskbyID(int_id)
+	item, err := database.GetTaskbyID(int_id)
 	if err != nil {
 		log.Fatal(err)
 		message_str := fmt.Sprintf("Task with id %s not found", id)
-		message := Message{message_str, fiber.StatusNotFound}
+		message := database.Message{ErrorMessage: message_str, StatusCode: fiber.StatusNotFound}
 		return ctx.Status(message.StatusCode).JSON(message)
 	}
 
@@ -87,5 +42,9 @@ func UpdateTask(ctx *fiber.Ctx) error {
 }
 
 func CreateTask(ctx *fiber.Ctx) error {
-	return nil
+	var task database.Task
+	if err := ctx.BodyParser(&task); err != nil {
+		message := database.Message{ErrorMessage: "Unprocessable request", StatusCode: fiber.StatusUnprocessableEntity}
+		return ctx.Status(message.StatusCode).JSON(message)
+	}
 }
