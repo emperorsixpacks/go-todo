@@ -1,4 +1,4 @@
-package databse 
+package database
 
 import (
 	"runtime"
@@ -13,13 +13,13 @@ const (
 
 var (
 	once         sync.Once
-	defaultCache *cache
+	defaultCache *Cache
 )
 
-func GetCache() *cache {
+func GetCache() *Cache {
 	items := make(map[string]Item)
 	once.Do(func() {
-		defaultCache = &cache{
+		defaultCache = &Cache{
 			items: items,
 		}
 		runJanitor(DefaultCacheInterval, defaultCache)
@@ -40,13 +40,13 @@ func (this Item) Expired() bool {
 	return time.Now().UnixNano() > this.duration
 }
 
-type cache struct {
+type Cache struct {
 	items   map[string]Item
 	mu      sync.RWMutex
 	janitor *Janitor
 }
 
-func (c *cache) Set(key string, value interface{}, ttl time.Duration) {
+func (c *Cache) Set(key string, value interface{}, ttl time.Duration) {
 	var d int64
 	if ttl == 0 {
 		ttl = DefaultDuration
@@ -61,7 +61,7 @@ func (c *cache) Set(key string, value interface{}, ttl time.Duration) {
 	}
 	return
 }
-func (c *cache) Get(key string) (interface{}, bool) {
+func (c *Cache) Get(key string) (interface{}, bool) {
 	c.mu.RLock()
 	item, ok := c.items[key]
 	if !ok {
@@ -75,7 +75,7 @@ func (c *cache) Get(key string) (interface{}, bool) {
 	return item.value, true
 }
 
-func (c *cache) Delete(key string) bool {
+func (c *Cache) Delete(key string) bool {
 	c.mu.RLock()
 	if _, ok := c.items[key]; !ok {
 		return false
@@ -85,20 +85,20 @@ func (c *cache) Delete(key string) bool {
 	return true
 }
 
-func (c *cache) Len() int {
+func (c *Cache) Len() int {
 	c.mu.RLock()
 	n := len(c.items)
 	c.mu.RUnlock()
 	return n
 }
 
-func (c *cache) Flush() {
+func (c *Cache) Flush() {
 	c.mu.RLock()
 	c.items = map[string]Item{}
 	c.mu.RUnlock()
 }
 
-func (c *cache) DeleteExpired() {
+func (c *Cache) DeleteExpired() {
 	c.mu.RLock()
 	for k, v := range c.items {
 		if v.Expired() {
@@ -113,7 +113,7 @@ type Janitor struct {
 	stop     chan bool
 }
 
-func (j *Janitor) Run(c *cache) {
+func (j *Janitor) Run(c *Cache) {
 	ticker := time.NewTicker(j.interval)
 	for {
 		select {
@@ -125,13 +125,13 @@ func (j *Janitor) Run(c *cache) {
 	}
 }
 
-func stopExceution(c *cache) {
+func stopExceution(c *Cache) {
 	c.janitor.stop <- true
 
 }
 
 // TODO we could design this better
-func runJanitor(interval time.Duration, c *cache) {
+func runJanitor(interval time.Duration, c *Cache) {
 	janitor := &Janitor{
 		interval: interval,
 		stop:     make(chan bool),
@@ -142,4 +142,4 @@ func runJanitor(interval time.Duration, c *cache) {
 
 // TODO set context for methods why
 // NOTE janitor should be private
-// TODO make it a cache package
+// TODO make it a Cache package
