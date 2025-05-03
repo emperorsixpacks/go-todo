@@ -18,9 +18,9 @@ type TasksList struct {
 	Tasks []*Task `json:"tasks"`
 }
 
-type Message struct {
-	ErrorMessage string `json:"message"`
-	StatusCode   int    `json:"status"`
+type ResponseMessage struct {
+	Message    string `json:"message"`
+	StatusCode int    `json:"status"`
 }
 
 func GetTasks() (TasksList, bool) {
@@ -47,6 +47,15 @@ func GetTaskbyID(id int64) (*Task, error) {
 		return nil, fmt.Errorf("No task with id %d", id)
 	}
 	return task, nil
+}
+
+func CreateTask(task Task) error {
+	tasks, _ := GetTasks()
+	new_task_id := len(tasks.Tasks) + 1
+	task.id = int64(new_task_id)
+	tasks.Tasks = append(tasks.Tasks, &task)
+	DB.Set("todos", tasks, 0)
+	return nil
 }
 
 func deleteTask(id int64) error {
