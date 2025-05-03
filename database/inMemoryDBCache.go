@@ -17,7 +17,7 @@ var (
 )
 
 func GetCache() *Cache {
-	items := make(map[string]Item)
+	items := make(map[string]item, 0)
 	once.Do(func() {
 		defaultCache = &Cache{
 			items: items,
@@ -28,12 +28,12 @@ func GetCache() *Cache {
 	return defaultCache
 }
 
-type Item struct {
-	value    interface{}
+type item struct {
+	value    any
 	duration int64
 }
 
-func (this Item) Expired() bool {
+func (this item) Expired() bool {
 	if this.duration == 0 {
 		return false
 	}
@@ -41,12 +41,12 @@ func (this Item) Expired() bool {
 }
 
 type Cache struct {
-	items   map[string]Item
+	items   map[string]item
 	mu      sync.RWMutex
 	janitor *Janitor
 }
 
-func (c *Cache) Set(key string, value interface{}, ttl time.Duration) {
+func (c *Cache) Set(key string, value any, ttl time.Duration) {
 	var d int64
 	if ttl == 0 {
 		ttl = DefaultDuration
@@ -55,13 +55,13 @@ func (c *Cache) Set(key string, value interface{}, ttl time.Duration) {
 		d = time.Now().Add(ttl).UnixNano()
 	}
 	c.mu.RLock()
-	c.items[key] = Item{
+	c.items[key] = item{
 		value:    value,
 		duration: d,
 	}
 	return
 }
-func (c *Cache) Get(key string) (interface{}, bool) {
+func (c *Cache) Get(key string) (any, bool) {
 	c.mu.RLock()
 	item, ok := c.items[key]
 	if !ok {
@@ -94,7 +94,7 @@ func (c *Cache) Len() int {
 
 func (c *Cache) Flush() {
 	c.mu.RLock()
-	c.items = map[string]Item{}
+	c.items = map[string]item{}
 	c.mu.RUnlock()
 }
 
