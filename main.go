@@ -9,6 +9,7 @@ import (
 
 func main() {
 	app := fiber.New()
+  setUpRoutes(app)
 	log.Printf("Starting service on port :3000")
 	app.Listen(":3000")
 }
