@@ -1,9 +1,3 @@
-
-Here's a well-structured `README.md` for your `go-todo` package based on the code you shared:
-
----
-
-```markdown
 # 📝 Go TODO API
 
 A simple task manager API built with [Fiber](https://github.com/gofiber/fiber) in Go, using an in-memory cache for storing tasks.
@@ -94,9 +88,3 @@ The server will start on: [http://localhost:3000](http://localhost:3000)
 
 MIT License
 
-```
-
----
-
-Would you like me to auto-generate the handler function docs too (like expected request/response bodies)?
-```
