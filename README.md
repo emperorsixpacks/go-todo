@@ -73,7 +73,7 @@ The server will start on: [http://localhost:3000](http://localhost:3000)
 
 ## 🧠 Notes
 
-* All data is stored in-memory using a cache (no persistent database).
+* All data is stored in-memory using a cache (no persistent database)-ttl 2mins.
 * Ideal for learning Go and building basic REST APIs with Fiber.
 
 ---
